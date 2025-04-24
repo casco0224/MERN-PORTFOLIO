@@ -65,7 +65,7 @@ import {
           </Link>
         </div>
         <div className="mt-4 md:mt-8 lg:mt-10  flex gap-3">
-          <Link to={"https://github.com/casco0224/Portfolio"} target="_blank">
+          <Link to={"https://github.com/casco0224/MERN-PORTFOLIO.git"} target="_blank">
             <Button className="rounded-[30px] flex items-center gap-2 flex-row">
               <span>
                 <Github />

@@ -10,7 +10,7 @@ const softwareApplicationSlice = createSlice({
     message: null,
   },
   reducers: {
-    getAllsoftwareApplicationsRequest(state) {
+    getAllsoftwareApplicationsRequest(state, action) {
       state.softwareApplications = [];
       state.error = null;
       state.loading = true;
@@ -21,10 +21,11 @@ const softwareApplicationSlice = createSlice({
       state.loading = false;
     },
     getAllsoftwareApplicationsFailed(state, action) {
+      state.softwareApplications = state.softwareApplications;
       state.error = action.payload;
       state.loading = false;
     },
-    addNewsoftwareApplicationsRequest(state) {
+    addNewsoftwareApplicationsRequest(state, action) {
       state.loading = true;
       state.error = null;
       state.message = null;
@@ -37,8 +38,9 @@ const softwareApplicationSlice = createSlice({
     addNewsoftwareApplicationsFailed(state, action) {
       state.error = action.payload;
       state.loading = false;
+      state.message = null;
     },
-    deletesoftwareApplicationsRequest(state) {
+    deletesoftwareApplicationsRequest(state, action) {
       state.loading = true;
       state.error = null;
       state.message = null;
@@ -51,15 +53,17 @@ const softwareApplicationSlice = createSlice({
     deletesoftwareApplicationsFailed(state, action) {
       state.error = action.payload;
       state.loading = false;
+      state.message = null;
     },
-    resetSoftwareApplicationSlice(state) {
+    resetSoftwareApplicationSlice(state, action) {
       state.error = null;
-      state.softwareApplications = [];
+      state.softwareApplications = state.softwareApplications;
       state.message = null;
       state.loading = false;
     },
-    clearAllErrors(state) {
+    clearAllErrors(state, action) {
       state.error = null;
+      state.softwareApplications = state.softwareApplications;
     },
   },
 });
@@ -73,22 +77,16 @@ export const getAllSoftwareApplications = () => async (dispatch) => {
       "http://localhost:5000/api/v1/softwareapplication/getall",
       { withCredentials: true }
     );
-    if (response.data && response.data.softwareApplications) {
-      dispatch(
-        softwareApplicationSlice.actions.getAllsoftwareApplicationsSuccess(
-          response.data.softwareApplications
-        )
-      );
-    } else {
-      throw new Error("La respuesta no contiene aplicaciones de software.");
-    }
+    dispatch(
+      softwareApplicationSlice.actions.getAllsoftwareApplicationsSuccess(
+        response.data.softwareApplications
+      )
+    );
+    dispatch(softwareApplicationSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message ||
-      "Error desconocido al obtener las aplicaciones.";
     dispatch(
       softwareApplicationSlice.actions.getAllsoftwareApplicationsFailed(
-        errorMessage
+        error.response.data.message
       )
     );
   }
@@ -100,31 +98,23 @@ export const addNewSoftwareApplication = (data) => async (dispatch) => {
   );
   try {
     const response = await axios.post(
-      "http://localhost:5000/api/v1/softwareapplication/add?svg",
+      "http://localhost:5000/api/v1/softwareapplication/add",
       data,
       {
         withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
-    if (response.data && response.data.message) {
-      dispatch(
-        softwareApplicationSlice.actions.addNewsoftwareApplicationsSuccess(
-          response.data.message
-        )
-      );
-    } else {
-      throw new Error(
-        "La respuesta del servidor no contiene un mensaje válido."
-      );
-    }
+    dispatch(
+      softwareApplicationSlice.actions.addNewsoftwareApplicationsSuccess(
+        response.data.message
+      )
+    );
+    dispatch(softwareApplicationSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message ||
-      "Error desconocido al agregar la aplicación.";
     dispatch(
       softwareApplicationSlice.actions.addNewsoftwareApplicationsFailed(
-        errorMessage
+        error.response.data.message
       )
     );
   }
@@ -137,26 +127,20 @@ export const deleteSoftwareApplication = (id) => async (dispatch) => {
   try {
     const response = await axios.delete(
       `http://localhost:5000/api/v1/softwareapplication/delete/${id}`,
-      { withCredentials: true }
+      {
+        withCredentials: true,
+      }
     );
-    if (response.data && response.data.message) {
-      dispatch(
-        softwareApplicationSlice.actions.deletesoftwareApplicationsSuccess(
-          response.data.message
-        )
-      );
-    } else {
-      throw new Error(
-        "La respuesta del servidor no contiene un mensaje válido."
-      );
-    }
+    dispatch(
+      softwareApplicationSlice.actions.deletesoftwareApplicationsSuccess(
+        response.data.message
+      )
+    );
+    dispatch(softwareApplicationSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message ||
-      "Error desconocido al eliminar la aplicación.";
     dispatch(
       softwareApplicationSlice.actions.deletesoftwareApplicationsFailed(
-        errorMessage
+        error.response.data.message
       )
     );
   }

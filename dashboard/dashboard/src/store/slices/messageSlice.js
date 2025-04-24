@@ -1,5 +1,5 @@
-import { createSlice } from "/node_modules/.vite/deps/@reduxjs_toolkit.js?v=957a9260";
-import axios from "/node_modules/.vite/deps/axios.js?v=957a9260";
+import { createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
 
 const messageSlice = createSlice({
   name: "messages",
@@ -10,7 +10,7 @@ const messageSlice = createSlice({
     message: null,
   },
   reducers: {
-    getAllMessagesRequest(state) {
+    getAllMessagesRequest(state, action) {
       state.messages = [];
       state.error = null;
       state.loading = true;
@@ -21,36 +21,38 @@ const messageSlice = createSlice({
       state.loading = false;
     },
     getAllMessagesFailed(state, action) {
+      state.messages = state.messages;
       state.error = action.payload;
       state.loading = false;
     },
-    deleteMessageRequest(state) {
+    deleteMessageRequest(state, action) {
       state.loading = true;
       state.error = null;
       state.message = null;
     },
     deleteMessageSuccess(state, action) {
-      state.message = action.payload;
       state.error = null;
       state.loading = false;
+      state.message = action.payload;
     },
     deleteMessageFailed(state, action) {
       state.error = action.payload;
       state.loading = false;
+      state.message = null;
     },
-    resetMessageSlice(state) {
+    resetMessageSlice(state, action) {
       state.error = null;
-      state.messages = [];
+      state.messages = state.messages;
       state.message = null;
       state.loading = false;
     },
-    clearAllErrors(state) {
+    clearAllErrors(state, action) {
       state.error = null;
+      state.messages = state.messages;
     },
   },
 });
 
-// Acción para obtener todos los mensajes
 export const getAllMessages = () => async (dispatch) => {
   dispatch(messageSlice.actions.getAllMessagesRequest());
   try {
@@ -58,50 +60,39 @@ export const getAllMessages = () => async (dispatch) => {
       "http://localhost:5000/api/v1/message/getall",
       { withCredentials: true }
     );
-    if (response.data && response.data.messages) {
-      dispatch(
-        messageSlice.actions.getAllMessagesSuccess(response.data.messages)
-      );
-    } else {
-      throw new Error("La respuesta de la API no contiene mensajes.");
-    }
+    dispatch(
+      messageSlice.actions.getAllMessagesSuccess(response.data.messages)
+    );
+    dispatch(messageSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message ||
-      "Error desconocido al obtener los mensajes.";
-    dispatch(messageSlice.actions.getAllMessagesFailed(errorMessage));
+    dispatch(
+      messageSlice.actions.getAllMessagesFailed(error.response.data.message)
+    );
   }
 };
 
-// Acción para eliminar un mensaje por ID
 export const deleteMessage = (id) => async (dispatch) => {
   dispatch(messageSlice.actions.deleteMessageRequest());
   try {
     const response = await axios.delete(
       `http://localhost:5000/api/v1/message/delete/${id}`,
-      { withCredentials: true }
+      {
+        withCredentials: true,
+      }
     );
-    if (response.data && response.data.message) {
-      dispatch(
-        messageSlice.actions.deleteMessageSuccess(response.data.message)
-      );
-    } else {
-      throw new Error("La respuesta de la API no contiene un mensaje válido.");
-    }
+    dispatch(messageSlice.actions.deleteMessageSuccess(response.data.message));
+    dispatch(messageSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message ||
-      "Error desconocido al eliminar el mensaje.";
-    dispatch(messageSlice.actions.deleteMessageFailed(errorMessage));
+    dispatch(
+      messageSlice.actions.deleteMessageFailed(error.response.data.message)
+    );
   }
 };
 
-// Acción para limpiar errores
 export const clearAllMessageErrors = () => (dispatch) => {
   dispatch(messageSlice.actions.clearAllErrors());
 };
 
-// Acción para reiniciar el estado de mensajes
 export const resetMessagesSlice = () => (dispatch) => {
   dispatch(messageSlice.actions.resetMessageSlice());
 };

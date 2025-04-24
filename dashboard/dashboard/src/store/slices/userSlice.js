@@ -12,7 +12,7 @@ const userSlice = createSlice({
     isUpdated: false,
   },
   reducers: {
-    loginRequest(state) {
+    loginRequest(state, action) {
       state.loading = true;
       state.isAuthenticated = false;
       state.user = {};
@@ -39,10 +39,14 @@ const userSlice = createSlice({
     },
     logoutFailed(state, action) {
       state.loading = false;
+      state.isAuthenticated = state.isAuthenticated;
+      state.user = state.user;
       state.error = action.payload;
     },
-    loadUserRequest(state) {
+    loadUserRequest(state, action) {
       state.loading = true;
+      state.isAuthenticated = false;
+      state.user = {};
       state.error = null;
     },
     loadUserSuccess(state, action) {
@@ -57,11 +61,11 @@ const userSlice = createSlice({
       state.user = {};
       state.error = action.payload;
     },
-    updatePasswordRequest(state) {
+    updatePasswordRequest(state, action) {
       state.loading = true;
       state.isUpdated = false;
-      state.error = null;
       state.message = null;
+      state.error = null;
     },
     updatePasswordSuccess(state, action) {
       state.loading = false;
@@ -72,13 +76,14 @@ const userSlice = createSlice({
     updatePasswordFailed(state, action) {
       state.loading = false;
       state.isUpdated = false;
+      state.message = null;
       state.error = action.payload;
     },
-    updateProfileRequest(state) {
+    updateProfileRequest(state, action) {
       state.loading = true;
       state.isUpdated = false;
-      state.error = null;
       state.message = null;
+      state.error = null;
     },
     updateProfileSuccess(state, action) {
       state.loading = false;
@@ -89,20 +94,21 @@ const userSlice = createSlice({
     updateProfileFailed(state, action) {
       state.loading = false;
       state.isUpdated = false;
+      state.message = null;
       state.error = action.payload;
     },
-    updateProfileResetAfterUpdate(state) {
-      state.isUpdated = false;
+    updateProfileResetAfterUpdate(state, action) {
       state.error = null;
+      state.isUpdated = false;
       state.message = null;
     },
-    clearAllErrors(state) {
+    clearAllErrors(state, action) {
       state.error = null;
+      state = state.user;
     },
   },
 });
 
-// Acción para iniciar sesión
 export const login = (email, password) => async (dispatch) => {
   dispatch(userSlice.actions.loginRequest());
   try {
@@ -112,14 +118,12 @@ export const login = (email, password) => async (dispatch) => {
       { withCredentials: true, headers: { "Content-Type": "application/json" } }
     );
     dispatch(userSlice.actions.loginSuccess(data.user));
+    dispatch(userSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message || "Error desconocido al iniciar sesión.";
-    dispatch(userSlice.actions.loginFailed(errorMessage));
+    dispatch(userSlice.actions.loginFailed(error.response.data.message));
   }
 };
 
-// Acción para cargar datos del usuario
 export const getUser = () => async (dispatch) => {
   dispatch(userSlice.actions.loadUserRequest());
   try {
@@ -127,15 +131,12 @@ export const getUser = () => async (dispatch) => {
       withCredentials: true,
     });
     dispatch(userSlice.actions.loadUserSuccess(data.user));
+    dispatch(userSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message ||
-      "Error desconocido al cargar el usuario.";
-    dispatch(userSlice.actions.loadUserFailed(errorMessage));
+    dispatch(userSlice.actions.loadUserFailed(error.response.data.message));
   }
 };
 
-// Acción para cerrar sesión
 export const logout = () => async (dispatch) => {
   try {
     const { data } = await axios.get(
@@ -143,14 +144,12 @@ export const logout = () => async (dispatch) => {
       { withCredentials: true }
     );
     dispatch(userSlice.actions.logoutSuccess(data.message));
+    dispatch(userSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message || "Error desconocido al cerrar sesión.";
-    dispatch(userSlice.actions.logoutFailed(errorMessage));
+    dispatch(userSlice.actions.logoutFailed(error.response.data.message));
   }
 };
 
-// Acción para actualizar contraseña
 export const updatePassword =
   (currentPassword, newPassword, confirmNewPassword) => async (dispatch) => {
     dispatch(userSlice.actions.updatePasswordRequest());
@@ -164,15 +163,14 @@ export const updatePassword =
         }
       );
       dispatch(userSlice.actions.updatePasswordSuccess(data.message));
+      dispatch(userSlice.actions.clearAllErrors());
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message ||
-        "Error desconocido al actualizar la contraseña.";
-      dispatch(userSlice.actions.updatePasswordFailed(errorMessage));
+      dispatch(
+        userSlice.actions.updatePasswordFailed(error.response.data.message)
+      );
     }
   };
 
-// Acción para actualizar el perfil del usuario
 export const updateProfile = (data) => async (dispatch) => {
   dispatch(userSlice.actions.updateProfileRequest());
   try {
@@ -185,20 +183,16 @@ export const updateProfile = (data) => async (dispatch) => {
       }
     );
     dispatch(userSlice.actions.updateProfileSuccess(response.data.message));
+    dispatch(userSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message ||
-      "Error desconocido al actualizar el perfil.";
-    dispatch(userSlice.actions.updateProfileFailed(errorMessage));
+    dispatch(
+      userSlice.actions.updateProfileFailed(error.response.data.message)
+    );
   }
 };
-
-// Acción para reiniciar el estado del perfil después de la actualización
 export const resetProfile = () => (dispatch) => {
   dispatch(userSlice.actions.updateProfileResetAfterUpdate());
 };
-
-// Acción para limpiar todos los errores
 export const clearAllUserErrors = () => (dispatch) => {
   dispatch(userSlice.actions.clearAllErrors());
 };

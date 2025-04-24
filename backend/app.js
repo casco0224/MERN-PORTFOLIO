@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import fileUpload from "express-fileupload";
+import path from "path";
 import dbconnection from "./database/dbConnection.js";
 import { errorMiddleware } from "./middlewares/error.js";
 import messageRouter from "./router/messageRouter.js";
@@ -40,6 +41,17 @@ app.use("/api/v1/timeline", timelineRouter);
 app.use("/api/v1/softwareapplication", softwareApplicationRouter);
 app.use("/api/v1/skill", skillRouter);
 app.use("/api/v1/project", projectRouter);
+
+// Ruta para descargar el archivo resume
+app.get("/api/v1/user/resume", (req, res) => {
+  const filePath = path.resolve("uploads/resume.pdf"); // Ajusta esta ruta según tu estructura
+  res.download(filePath, "resume.pdf", (err) => {
+    if (err) {
+      console.error("Error al descargar el archivo:", err);
+      res.status(500).send("Error al procesar la descarga.");
+    }
+  });
+});
 
 dbconnection();
 app.use(errorMiddleware);

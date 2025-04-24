@@ -7,6 +7,7 @@ import ProjectView from "./pages/ProjectView";
 import Footer from "./pages/miniComponents/Footer";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import About from "./pages/miniComponents/About";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/project/:id" element={<ProjectView />} />
+          <Route path="/about" element={<About />} /> {/* Nueva ruta para About */}
         </Routes>
         <Footer />
         <ToastContainer position="bottom-right" theme="dark" />

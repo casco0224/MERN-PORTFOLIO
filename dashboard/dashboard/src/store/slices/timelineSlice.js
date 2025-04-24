@@ -6,110 +6,68 @@ const timelineSlice = createSlice({
   initialState: {
     loading: false,
     timeline: [],
-    currentTimeline: null, // Nuevo estado para almacenar un timeline específico
     error: null,
     message: null,
   },
   reducers: {
-    // Acciones para obtener todos los timelines
-    getAllTimelineRequest(state) {
-      state.loading = true;
+    getAllTimelineRequest(state, action) {
+      state.timeline = [];
       state.error = null;
+      state.loading = true;
     },
     getAllTimelineSuccess(state, action) {
       state.timeline = action.payload;
-      state.loading = false;
       state.error = null;
+      state.loading = false;
     },
     getAllTimelineFailed(state, action) {
-      state.loading = false;
+      state.timeline = state.timeline;
       state.error = action.payload;
+      state.loading = false;
     },
-
-    // Acciones para agregar un nuevo timeline
-    addNewTimelineRequest(state) {
+    addNewTimelineRequest(state, action) {
       state.loading = true;
       state.error = null;
       state.message = null;
     },
     addNewTimelineSuccess(state, action) {
+      state.error = null;
       state.loading = false;
       state.message = action.payload;
-      state.error = null;
     },
     addNewTimelineFailed(state, action) {
-      state.loading = false;
       state.error = action.payload;
+      state.loading = false;
       state.message = null;
     },
-
-    // Acciones para eliminar un timeline
-    deleteTimelineRequest(state) {
+    deleteTimelineRequest(state, action) {
       state.loading = true;
       state.error = null;
       state.message = null;
     },
     deleteTimelineSuccess(state, action) {
+      state.error = null;
       state.loading = false;
       state.message = action.payload;
-      state.error = null;
     },
     deleteTimelineFailed(state, action) {
-      state.loading = false;
       state.error = action.payload;
+      state.loading = false;
       state.message = null;
     },
-
-    // Acciones para obtener un timeline por ID
-    getTimelineByIdRequest(state) {
-      state.loading = true;
+    resetTimelineSlice(state, action) {
       state.error = null;
-      state.currentTimeline = null;
-    },
-    getTimelineByIdSuccess(state, action) {
-      state.loading = false;
-      state.currentTimeline = action.payload;
-      state.error = null;
-    },
-    getTimelineByIdFailed(state, action) {
-      state.loading = false;
-      state.error = action.payload;
-      state.currentTimeline = null;
-    },
-
-    // Acciones para actualizar un timeline
-    updateTimelineRequest(state) {
-      state.loading = true;
-      state.error = null;
+      state.timeline = state.timeline;
       state.message = null;
-    },
-    updateTimelineSuccess(state, action) {
       state.loading = false;
-      state.message = action.payload;
-      state.error = null;
     },
-    updateTimelineFailed(state, action) {
-      state.loading = false;
-      state.error = action.payload;
-      state.message = null;
-    },
-
-    // Acciones para resetear el estado
-    resetTimelineSlice(state) {
-      state.loading = false;
+    clearAllErrors(state, action) {
       state.error = null;
-      state.message = null;
-      state.timeline = [];
-      state.currentTimeline = null;
-    },
-    clearAllErrors(state) {
-      state.error = null;
-      state.message = null;
+      state = state.timeline;
     },
   },
 });
 
-// Acción para obtener todos los timelines
 export const getAllTimeline = () => async (dispatch) => {
   dispatch(timelineSlice.actions.getAllTimelineRequest());
   try {
@@ -122,13 +80,12 @@ export const getAllTimeline = () => async (dispatch) => {
     );
     dispatch(timelineSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message || "Something went wrong";
-    dispatch(timelineSlice.actions.getAllTimelineFailed(errorMessage));
+    dispatch(
+      timelineSlice.actions.getAllTimelineFailed(error.response.data.message)
+    );
   }
 };
 
-// Acción para agregar un nuevo timeline
 export const addNewTimeline = (data) => async (dispatch) => {
   dispatch(timelineSlice.actions.addNewTimelineRequest());
   try {
@@ -145,13 +102,11 @@ export const addNewTimeline = (data) => async (dispatch) => {
     );
     dispatch(timelineSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message || "Something went wrong";
-    dispatch(timelineSlice.actions.addNewTimelineFailed(errorMessage));
+    dispatch(
+      timelineSlice.actions.addNewTimelineFailed(error.response.data.message)
+    );
   }
 };
-
-// Acción para eliminar un timeline
 export const deleteTimeline = (id) => async (dispatch) => {
   dispatch(timelineSlice.actions.deleteTimelineRequest());
   try {
@@ -166,57 +121,16 @@ export const deleteTimeline = (id) => async (dispatch) => {
     );
     dispatch(timelineSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message || "Something went wrong";
-    dispatch(timelineSlice.actions.deleteTimelineFailed(errorMessage));
-  }
-};
-
-// Acción para obtener un timeline por ID
-export const getTimelineById = (id) => async (dispatch) => {
-  dispatch(timelineSlice.actions.getTimelineByIdRequest());
-  try {
-    const response = await axios.get(
-      `http://localhost:5000/api/v1/timeline/get/${id}`,
-      { withCredentials: true }
-    );
     dispatch(
-      timelineSlice.actions.getTimelineByIdSuccess(response.data.timeline)
+      timelineSlice.actions.deleteTimelineFailed(error.response.data.message)
     );
-    dispatch(timelineSlice.actions.clearAllErrors());
-  } catch (error) {
-    const errorMessage =
-      error.response?.data?.message || "Something went wrong";
-    dispatch(timelineSlice.actions.getTimelineByIdFailed(errorMessage));
   }
 };
 
-// Acción para actualizar un timeline
-export const updateTimeline = (id, data) => async (dispatch) => {
-  dispatch(timelineSlice.actions.updateTimelineRequest());
-  try {
-    const response = await axios.put(
-      `http://localhost:5000/api/v1/timeline/update/${id}`,
-      data,
-      { withCredentials: true }
-    );
-    dispatch(
-      timelineSlice.actions.updateTimelineSuccess(response.data.message)
-    );
-    dispatch(timelineSlice.actions.clearAllErrors());
-  } catch (error) {
-    const errorMessage =
-      error.response?.data?.message || "Something went wrong";
-    dispatch(timelineSlice.actions.updateTimelineFailed(errorMessage));
-  }
-};
-
-// Acción para resetear el slice
 export const resetTimelineSlice = () => (dispatch) => {
   dispatch(timelineSlice.actions.resetTimelineSlice());
 };
 
-// Acción para limpiar errores
 export const clearAllTimelineErrors = () => (dispatch) => {
   dispatch(timelineSlice.actions.clearAllErrors());
 };

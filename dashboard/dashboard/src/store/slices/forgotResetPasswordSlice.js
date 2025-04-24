@@ -9,7 +9,7 @@ const forgotResetPassSlice = createSlice({
     message: null,
   },
   reducers: {
-    forgotPasswordRequest(state) {
+    forgotPasswordRequest(state, action) {
       state.loading = true;
       state.error = null;
       state.message = null;
@@ -24,7 +24,7 @@ const forgotResetPassSlice = createSlice({
       state.error = action.payload;
       state.message = null;
     },
-    resetPasswordRequest(state) {
+    resetPasswordRequest(state, action) {
       state.loading = true;
       state.error = null;
       state.message = null;
@@ -39,73 +39,62 @@ const forgotResetPassSlice = createSlice({
       state.error = action.payload;
       state.message = null;
     },
-    clearAllErrors(state) {
+    clearAllErrors(state, action) {
       state.error = null;
+      state = state;
     },
   },
 });
 
-// Acción para enviar el correo de recuperación de contraseña
 export const forgotPassword = (email) => async (dispatch) => {
-  dispatch(forgotResetPassSlice.actions.forgotPasswordRequest());
   try {
+    dispatch(forgotResetPassSlice.actions.forgotPasswordRequest());
+    console.log(email);
     const response = await axios.post(
       "http://localhost:5000/api/v1/user/password/forgot",
       { email },
       { withCredentials: true, headers: { "Content-Type": "application/json" } }
     );
-    if (response.data?.message) {
-      dispatch(
-        forgotResetPassSlice.actions.forgotPasswordSuccess(
-          response.data.message
-        )
-      );
-    } else {
-      throw new Error(
-        "No se recibió un mensaje válido al solicitar el cambio de contraseña."
-      );
-    }
+    console.log(response);
+    dispatch(
+      forgotResetPassSlice.actions.forgotPasswordSuccess(response.data.message)
+    );
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message ||
-      "Error desconocido al solicitar el cambio de contraseña.";
-    dispatch(forgotResetPassSlice.actions.forgotPasswordFailed(errorMessage));
+    console.log(error);
+    dispatch(
+      forgotResetPassSlice.actions.forgotPasswordFailed(
+        error.response.data.message
+      )
+    );
   }
 };
 
-// Acción para restablecer la contraseña
 export const resetPassword =
   (token, password, confirmPassword) => async (dispatch) => {
-    dispatch(forgotResetPassSlice.actions.resetPasswordRequest());
     try {
+      dispatch(forgotResetPassSlice.actions.resetPasswordRequest());
       const response = await axios.put(
-        `http://localhost:5000/api/v1/user/password/reset/${token}`,
+        ` http://localhost:5000/api/v1/user/password/reset/${token}`,
         { password, confirmPassword },
         {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
         }
       );
-      if (response.data?.message) {
-        dispatch(
-          forgotResetPassSlice.actions.resetPasswordSuccess(
-            response.data.message
-          )
-        );
-      } else {
-        throw new Error(
-          "No se recibió un mensaje válido al restablecer la contraseña."
-        );
-      }
+      console.log(response);
+      dispatch(
+        forgotResetPassSlice.actions.resetPasswordSuccess(response.data.message)
+      );
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message ||
-        "Error desconocido al restablecer la contraseña.";
-      dispatch(forgotResetPassSlice.actions.resetPasswordFailed(errorMessage));
+      console.log(error);
+      dispatch(
+        forgotResetPassSlice.actions.resetPasswordFailed(
+          error.response.data.message
+        )
+      );
     }
   };
 
-// Acción para limpiar los errores
 export const clearAllForgotResetPassErrors = () => (dispatch) => {
   dispatch(forgotResetPassSlice.actions.clearAllErrors());
 };

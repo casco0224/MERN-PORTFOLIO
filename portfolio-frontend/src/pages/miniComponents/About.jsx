@@ -1,6 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 const About = () => {
+  const user = {
+    avatar: {
+      url: "https://res.cloudinary.com/dgdtyohfm/image/upload/v1742872343/PORTFOLIO%20RESUME/tngq8jdll9mo54mnqpdk.png", // Reemplaza con el URL real de tu avatar
+    },
+    fullName: "Milton Casco",
+  };
+
   return (
     <div className="w-full flex flex-col overflow-x-hidden">
       <div className="relative">
@@ -12,7 +19,7 @@ const About = () => {
             background: "hsl(222.2 84% 4.9%)",
           }}
         >
-          ABOUT<span className="text-tubeLight-effect font-extrabold">ME</span>
+          ABOUT <span className="text-tubeLight-effect font-extrabold"> ME </span>
         </h1>
         <span className="absolute w-full h-1 top-7 sm:top-7 md:top-8 lg:top-11 z-[-1] bg-slate-200"></span>
       </div>
@@ -25,22 +32,22 @@ const About = () => {
         <div className="grid md:grid-cols-2 my-8 sm:my-20 gap-14">
           <div className="flex justify-center items-center">
             <img
-              src="/me.jpg"
-              alt="avatar"
-              className="bg-white p-2 sm:p-4 rotate-[25deg] h-[240px] sm:h-[340px] md:h-[350px] lg:h-[450px]"
+              src={user.avatar.url}
+              alt={user.fullName}
+              className="bg-white p-2 sm:p-4 rounded-lg shadow-lg h-[200px] sm:h-[300px] md:h-[350px] lg:h-[400px] object-cover"
             />
           </div>
           <div className="flex justify-center flex-col tracking-[1px] text-xl gap-5">
             <p>
-              My name is Milton Casco. I will
-              graduate in licenciatura de informatica administrativa around 2026. 
-              Actualmente trabajo como auxiliar contable. My hobbies include watching
-              movies, series, playing video games y jugar al futbol
+              My name is Milton Casco. I will graduate in licenciatura de
+              informatica administrativa around 2026. Actualmente trabajo como
+              auxiliar contable. My hobbies include watching movies, series,
+              playing video games y jugar al futbol.
             </p>
             <p>
               I have interests not only in technology but also las movies,
               series, video games asi como tambien las contabilidades.
-               I excel in meeting deadlines for my work.
+              I excel in meeting deadlines for my work.
             </p>
           </div>
         </div>

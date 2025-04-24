@@ -10,7 +10,7 @@ const skillSlice = createSlice({
     message: null,
   },
   reducers: {
-    getAllSkillsRequest(state) {
+    getAllSkillsRequest(state, action) {
       state.skills = [];
       state.error = null;
       state.loading = true;
@@ -21,10 +21,11 @@ const skillSlice = createSlice({
       state.loading = false;
     },
     getAllSkillsFailed(state, action) {
+      state.skills = state.skills;
       state.error = action.payload;
       state.loading = false;
     },
-    addNewSkillRequest(state) {
+    addNewSkillRequest(state, action) {
       state.loading = true;
       state.error = null;
       state.message = null;
@@ -37,8 +38,9 @@ const skillSlice = createSlice({
     addNewSkillFailed(state, action) {
       state.error = action.payload;
       state.loading = false;
+      state.message = null;
     },
-    deleteSkillRequest(state) {
+    deleteSkillRequest(state, action) {
       state.loading = true;
       state.error = null;
       state.message = null;
@@ -51,8 +53,9 @@ const skillSlice = createSlice({
     deleteSkillFailed(state, action) {
       state.error = action.payload;
       state.loading = false;
+      state.message = null;
     },
-    updateSkillRequest(state) {
+    updateSkillRequest(state, action) {
       state.loading = true;
       state.error = null;
       state.message = null;
@@ -65,15 +68,17 @@ const skillSlice = createSlice({
     updateSkillFailed(state, action) {
       state.error = action.payload;
       state.loading = false;
+      state.message = null;
     },
-    resetSkillSlice(state) {
+    resetSkillSlice(state, action) {
       state.error = null;
-      state.skills = [];
+      state.skills = state.skills;
       state.message = null;
       state.loading = false;
     },
-    clearAllErrors(state) {
+    clearAllErrors(state, action) {
       state.error = null;
+      state.skills = state.skills;
     },
   },
 });
@@ -85,16 +90,12 @@ export const getAllSkills = () => async (dispatch) => {
       "http://localhost:5000/api/v1/skill/getall",
       { withCredentials: true }
     );
-    if (response.data && response.data.skills) {
-      dispatch(skillSlice.actions.getAllSkillsSuccess(response.data.skills));
-    } else {
-      throw new Error("La respuesta no contiene datos de habilidades.");
-    }
+    dispatch(skillSlice.actions.getAllSkillsSuccess(response.data.skills));
+    dispatch(skillSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message ||
-      "Error desconocido al obtener las habilidades.";
-    dispatch(skillSlice.actions.getAllSkillsFailed(errorMessage));
+    dispatch(
+      skillSlice.actions.getAllSkillsFailed(error.response.data.message)
+    );
   }
 };
 
@@ -109,18 +110,12 @@ export const addNewSkill = (data) => async (dispatch) => {
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
-    if (response.data && response.data.message) {
-      dispatch(skillSlice.actions.addNewSkillSuccess(response.data.message));
-    } else {
-      throw new Error(
-        "La respuesta del servidor no contiene un mensaje válido."
-      );
-    }
+    console.log(response);
+    console.log(response.data.message);
+    dispatch(skillSlice.actions.addNewSkillSuccess(response.data.message));
+    dispatch(skillSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message ||
-      "Error desconocido al agregar la habilidad.";
-    dispatch(skillSlice.actions.addNewSkillFailed(errorMessage));
+    dispatch(skillSlice.actions.addNewSkillFailed(error.response.data.message));
   }
 };
 
@@ -135,18 +130,10 @@ export const updateSkill = (id, proficiency) => async (dispatch) => {
         headers: { "Content-Type": "application/json" },
       }
     );
-    if (response.data && response.data.message) {
-      dispatch(skillSlice.actions.updateSkillSuccess(response.data.message));
-    } else {
-      throw new Error(
-        "La respuesta del servidor no contiene un mensaje válido."
-      );
-    }
+    dispatch(skillSlice.actions.updateSkillSuccess(response.data.message));
+    dispatch(skillSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message ||
-      "Error desconocido al actualizar la habilidad.";
-    dispatch(skillSlice.actions.updateSkillFailed(errorMessage));
+    dispatch(skillSlice.actions.updateSkillFailed(error.response.data.message));
   }
 };
 
@@ -159,18 +146,10 @@ export const deleteSkill = (id) => async (dispatch) => {
         withCredentials: true,
       }
     );
-    if (response.data && response.data.message) {
-      dispatch(skillSlice.actions.deleteSkillSuccess(response.data.message));
-    } else {
-      throw new Error(
-        "La respuesta del servidor no contiene un mensaje válido."
-      );
-    }
+    dispatch(skillSlice.actions.deleteSkillSuccess(response.data.message));
+    dispatch(skillSlice.actions.clearAllErrors());
   } catch (error) {
-    const errorMessage =
-      error.response?.data?.message ||
-      "Error desconocido al eliminar la habilidad.";
-    dispatch(skillSlice.actions.deleteSkillFailed(errorMessage));
+    dispatch(skillSlice.actions.deleteSkillFailed(error.response.data.message));
   }
 };
 
